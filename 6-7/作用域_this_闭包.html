@@ -113,6 +113,7 @@ bind返回的值不执行的
 
 
   function test1(a, b, c) {
+
     return this.a + a + b + c;
 
   }
@@ -120,7 +121,7 @@ bind返回的值不执行的
   // console.log(test1.bind(obj)(1, 2, 3));    8
 
 
-  Function.prototype.__bind = function () {
+  Function.prototype.__bind = function (context) {
     // 1. 必须为函数调用
     const _this = this;
     if (typeof this !== "function") {
@@ -133,12 +134,13 @@ bind返回的值不执行的
     let newThis = arguments[0];
     // 4. return 一个函数
     return function () {
-      return _this.__apply(newThis, args)
+      const innerArgs = [...arguments];
+      return _this.__apply(newThis, args.concat(innerArgs))
     }
 
   }
-  console.log(test1.bind(obj));//
-  console.log(test1.__bind(obj));// 和原方法不一致。等待研究
+  console.log(test1.bind(obj)(1, 2, 3));//
+  console.log(test1.__bind(obj)(1, 2, 3));
 
 </script>
 </html>

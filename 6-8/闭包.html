@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+1. 闭包
+
+闭包就是在一个函数作用域中可以访问另外一个函数内部局部变量的函数
+
+本质就是一个函数，随着函数的创建而生成
+
+
+作用：
+1.可以访问函数内部的变量
+2.使得变量长期保存在内存中生命周期比较长
+3.实现js的模板功能
+
+会产生内存泄露
+
+问题说明：内存泄露和垃圾回收需要学习
+
+实现需求：五个button 点击第几个则打印几
+
+
+<button>1</button>
+<button>2</button>
+<button>3</button>
+<button>4</button>
+<button>5</button>
+
+<div id="result"></div>
+
+</body>
+<script>
+  let buttonsDom = document.getElementsByTagName("button");
+  let result = document.getElementById("result")
+
+  //使用var才有问题，使用let肯定是正确展示
+  // var定义为全局变量，每一个引用都是对全局i的操作，因此都展示6没啥问题
+
+  for (var i = 0; i < buttonsDom.length; i++) {
+    buttonsDom[i].onclick = (function (index) {
+      return function () {
+        result.textContent = index + 1;
+      }
+    })(i)
+
+  }
+
+
+  function outer() {
+    let num = 0;
+    return function () {
+      num++;
+      console.log(num)
+    }
+  }
+
+  let a = outer();
+
+  // a();  //1
+  // a();  //2
+
+
+  //作业
+
+  (function () {
+    var x = y = 1;
+  })()
+  var z;
+
+
+  /**
+   * x为函数中声明的变量，y会被渗透到全局为全局变量，z为全局未定义
+   */
+    // console.log(x, y, z);
+
+  var a, b
+  (function () {
+      console.log(a);
+      console.log(b);
+      var a = (b = 3);
+      console.log(a);
+      console.log(b);
+
+      console.log(a);
+      console.log(b);
+    }
+  )()
+</script>
+</html>
