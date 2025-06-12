@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue 3 Components</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+<div id="app">
+  {{title}}
+  <test v-model:title="title"></test>
+</div>
+
+<script>
+
+  const {createApp} = Vue;
+  const {
+    ref, reactive, toRef, computed, shallowReactive, shallowRef, isReactive, customRef, watchEffect, watch
+  }
+    = Vue;
+  const test = {
+    props: {
+      title: String
+    },
+    emits: ['update:title'],
+    /**
+     *
+     * @param props  组件外部传递的参数并且组件内部申明接受的参数
+     * @param context
+     * 1.attr组件外部传递，没有在props中声明的参数
+     * 2.收到的插槽内容
+     * 3.emit分发的额自定会事件
+     * 4.expose有选择性的暴漏自己的方法
+     * @returns {{title: *}}
+     */
+    setup(props, context) {
+      /**
+       * 组合式api的入口
+       * 用到的方法合数据都要写在setup中，在beforeCreate之前执行一次
+       * 1.若返回一个属性或者方法在模板中能直接使用
+       * 2.返回渲染函数则自定义渲染内容
+       */
+
+
+      /**
+       * ref声明一个响应式数组可以是基本数据类型或者对象
+       * reactive只能是引用对象类型
+       *
+       * toRef 可以基于响应式对象上的一个属性，创建一个对应的 ref。这样创建的 ref 与其源属性保持同步：改变源属性的值将更新 ref 的值，反之亦然。
+       * toRef() 这个函数在你想把一个 prop 的 ref 传递给一个组合式函数时会很有用：
+       *
+       * shallowReactive只进行浅响应式的转换
+       *
+       *
+       * shallowRef基本数据响应式，不进行对象的响应式处理。
+       *
+       * readonly让一个数据变成只读的，应用不希望数据被修改时
+       *
+       * shallowReadonly响应式数据变成只读，浅只读只有第一层才是只读的
+       *
+       * toRaw将响应式变成非响应式对象
+       *
+       * customRef自定义响应式的行为
+       */
+      const a = ref("a");
+      const b = reactive({b: "b"});
+
+      const bRef = toRef(b, "b");
+      bRef.value = "bbb";
+      console.log(b, bRef);
+
+      const c = shallowReactive({
+        a: 1,
+      })
+
+
+      // 需求就是在按钮触发之后c.a的值延迟一秒更新
+      const e = customRef((track, trigger) => {
+        let timer;
+        return {
+          get() {
+            track();
+            return c.a;
+
+          },
+          set(newValue) {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+              c.a = newValue;
+              trigger();
+            }, 1000);
+          }
+        }
+      })
+
+      // computed和watch同vue2
+
+      // watchEffect的使用  立即运行一个函数，同时响应式地追踪其依赖，并在依赖更改时重新执行。
+
+      /**
+       * watch 和 watchEffect 都能响应式地执行有副作用的回调。它们之间的主要区别是追踪响应式依赖的方式：
+
+       watch 只追踪明确侦听的数据源。它不会追踪任何在回调中访问到的东西。另外，仅在数据源确实改变时才会触发回调。watch 会避免在发生副作用时追踪依赖，因此，我们能更加精确地控制回调函数的触发时机。
+
+       watchEffect，则会在副作用发生期间追踪依赖。它会在同步执行过程中，自动追踪所有能访问到的响应式属性。这更方便，而且代码往往更简洁，但有时其响应性依赖关系会不那么明确。
+       */
+
+      //其他机制需要学习
+
+
+      /**
+       * 生命周期
+       *
+       *
+       //生命周期创建阶段 (Creation)
+       setup() - 新的 Composition API 入口点，在组件创建之前执行
+
+       onBeforeMount() - 在挂载开始之前被调用
+
+       onMounted() - 组件挂载完成后调用，DOM 已渲染
+
+       更新阶段 (Updating)
+       onBeforeUpdate() - 数据变化导致 DOM 更新之前调用
+
+       onUpdated() - 数据变化导致 DOM 更新完成后调用
+
+       卸载阶段 (Unmounting)
+       onBeforeUnmount() (替代 Vue 2 的 beforeDestroy) - 组件卸载前调用
+
+       onUnmounted() (替代 Vue 2 的 destroyed) - 组件卸载后调用
+
+       其他钩子
+       onErrorCaptured() - 捕获来自子孙组件的错误时调用
+
+       onRenderTracked() (新增) - 跟踪虚拟 DOM 重新渲染时调用
+
+       onRenderTriggered() (新增) - 虚拟 DOM 重新渲染被触发时调用
+
+       onActivated() - 被 keep-alive 缓存的组件激活时调用
+
+       onDeactivated() - 被 keep-alive 缓存的组件停用时调用
+       */
+
+
+      /**
+       * hooks封装为公共逻辑
+       * todo
+       */
+
+      /**
+       * <Teleport> 是一个内置组件，它可以将一个组件内部的一部分模板“传送”到该组件的 DOM 结构外层的位置去。
+       *
+       *
+       * todo
+       */
+
+      /**
+       * <Suspense> 组件自身目前还不提供错误处理，不过你可以使用 errorCaptured 选项或者 onErrorCaptured() 钩子，在使用到 <Suspense> 的父组件中捕获和处理异步错误。
+       *
+       * todo
+       */
+
+
+      /**
+       * 插槽slots
+       */
+
+      /**
+       * 自定义指令
+       */
+
+      /**
+       * 异步组件
+       */
+
+
+      watchEffect(() => console.log(c.a))
+
+
+      console.log(e.value);
+      const buttonChange = () => {
+        c.a++;
+      }
+      return {buttonChange, c}
+    },
+    template: `
+      <div>
+      {{ title }}
+      {{ c }}
+      <button @click="buttonChange">123123</button>
+      </div>
+    `
+  };
+
+  // 创建应用并注册组件
+  const app = createApp({
+    setup() {
+      const title = ref("test");
+      return {title};
+    }
+  });
+
+  app.component('test', test);
+
+
+  app.mount('#app');
+</script>
+</body>
+</html>
