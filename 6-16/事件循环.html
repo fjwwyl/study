@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+事件循环是
+
+宿主机器处理js异步的操作，让其能够非阻塞运行的方式
+
+
+浏览器有三个进程
+
+
+浏览器进程
+
+
+主进程
+
+多个浏览器窗口，但是这个进程始终只有一个
+负责进程管理，用户管理和浏览器页面交互
+
+
+渲染进程
+解析html和css，js等资源，生成渲染树，布局绘制重排，画
+
+
+网络进程
+处理网络的数据和请求
+他有多个线程来处理网络请求的异步处理
+
+
+宏队列和微队列
+
+宏队列排队宏任务（DOM操作回调，定时器回调，UI绘制)，微队列排微任务（Promise回调）
+
+
+微队列：用于存放需要执行最快的任务，优先级极高，比如promise.then(),MutationObserver
+
+交互队列：用于存放用户操作后产生的事件任务，优先级次于微队列
+
+延迟队列：用于存放定时器到达后的回调任务，优先级次于交互队列
+
+
+执行栈和任务队列
+
+
+同步代码在执行栈中执行，遇到异步任务将其交给对应的线程处理，等同步代码执行完之后，会从一个队列中获取到异步任务的回调函数加入到执行栈中继续执行，以此循环执行
+
+以上任务队列可以分层两个
+微任务和宏任务
+
+
+同步代码执行完之后就回去微任务队列中获取函数执行，然后是宏任务，微任务队列只有一个宏任务队列有很多个
+
+宏任务：定时器，鼠标操作事件，
+
+微任务，promise.then catch
+
+宏任务有明确的异步任务需要执行和回调，需要其他异步任务的参与
+
+微任务：没有明确的异步任务需要执行光回调不需要其他异步线程支持
+
+
+视图更新渲染：
+视图重绘会执行requestAnimationFrame回调，他不属于微任务也不属于宏任务
+
+人工合成的事件派发，即直接在代码里写的dom.click()或dispatchEvent()，相对于浏览器而言并不是真正的 用户交互，会被当作同步任务执行
+
+<button id="button"> test</button>
+<script>
+  const btn = document.getElementById('button');
+
+  function test() {
+    console.log('function test');  //5
+    Promise.resolve().then(() => {
+      console.log("promise1")  //6
+    })
+  }
+
+  setTimeout(() => {
+    console.log('set timer');  //4
+    Promise.resolve().then(test);
+  })
+
+  btn.onclick = () => {
+    console.log('click button')   //1
+  }
+  btn.click();
+  Promise.resolve().then(() => {
+    console.log("promise2");  //3
+  })
+  console.log('script start')  //2
+</script>
+
+</body>
+</html>
