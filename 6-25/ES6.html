@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+1. const的用法
+不容许重复赋值
+块级作用域 var有变量提升
+无变量提升
+强调块级
+变量不会存在于windows
+死区 不能在未声明之前使用
+对应面试题 let const var的区别
+
+引用的原理，指向的是数据所在的地址
+如果const a={};
+const只是不能修改所指向的地址，但是对象是可以修改的。
+如果不让对象修改可以使用 Object.freeze
+
+freeze缺点不能深层次
+
+<script>
+  const a = {a: 1, b: 2, c: {d: 1}, arr: [1, 2, 3]};
+  // console.log(a);
+  // a.a = 2;
+  // console.log(a);
+  // Object.freeze(a);
+  // a.a = 3;  //无效的设置
+  // console.log(a);
+  // a.c.d = 4;  //有效果
+  // console.log(a);
+  //
+  // a.arr[3] = 4;
+  // console.log(a);
+
+
+  //层层冻结的实现
+  function everyFreeze(obj) {
+    Object.freeze(obj);
+
+    for (let o in obj) {
+      if (typeof o === "object") {
+        everyFreeze(obj);
+      }
+    }
+  }
+
+  everyFreeze(a);
+  console.log(a);
+  a.a = 2;
+  console.log(a);
+  Object.freeze(a);
+  a.a = 3;
+  console.log(a);
+  a.c.d = 4;
+  console.log(a);
+
+  a.arr[3] = 4;
+  console.log(a);
+
+
+</script>
+
+
+箭头函数
+
+<script>
+  //传统函数
+
+  function add(a, b) {
+    return a + b;
+
+  }
+
+  const test = function (a, b) {
+    return a + b;
+  }
+  // 箭头函数
+
+  const test1 = (a, b) => a + b;
+
+  //箭头函数不具备上下文
+  //箭头函数不具备构造类，无法使用new创建一个对象
+
+
+</script>
+class类
+
+<script>
+
+  //原始的类生成方法
+
+  // function Person(name, age) {
+  //   this.age = age;
+  //   this.name = name;
+  // }
+  //
+  // Person.prototype.getPerson = function () {
+  //   return this.name + "_" + this.age;
+  // }
+  //
+  //
+  // const p = new Person("fjw", 20);
+  //
+  // console.log(p, p.getPerson());
+
+
+  //使用class
+
+  class Person {
+    constructor(name, age) {
+      this.age = age;
+      this.name = name;
+      // 私有属性  通过闭包实现，
+
+      let school = "sust";
+
+      this.getSchool = () => {
+        return school;
+      }
+
+    }
+
+    //挂载到类上的，只是可以通过原型链访问
+    static getName(a, b) {
+      console.log(this.name)
+      return this.name + a + b;
+      return this.name;
+    }
+
+    getPerson() {
+      return this.name + "_" + this.age;
+    }
+
+    //属性表达形式
+    // 可以设置直接获取属性的值的输出
+    // 可以设置这个属性为只读模式
+
+    // get name() {
+    //   return this._name;
+    // }
+  }
+
+  // const p = new Person("fjw", 20);
+  // p.name = "fjw1";
+  // console.log(p.name, p.getSchool());
+  //
+  // const aa = Person.getName(1,5);
+  // console.log(aa);
+</script>
+
+
+继承
+
+
+<script>
+  class Parent {
+    constructor(name) {
+      this.name = name;
+    }
+  }
+
+  class Children extends Parent {
+    constructor(age) {
+      super("a");
+      this.age = age;
+    }
+  }
+
+  const p = new Parent("fjw");
+  const c = new Children(18);
+
+  console.log(p, c);
+</script>
+
+解构
+
+代理 proxy
+
+数据劫持
+
+<script>
+  let obj = {
+    name: "fjw",
+    age: 18,
+    school: "sust"
+  }
+
+  let obj1 = new Proxy(obj, {
+    get(target, prop) {
+      console.log(target, prop);
+      return target[prop];
+    },
+    set(target, prop, val) {
+      target[prop] = val;
+      console.log(target, prop, val);
+    }
+  })
+
+  obj1.age = 20;
+  console.log(obj1);
+</script>
+
+Reflect  衍射或者映射
+
+对象的读写和对象的操作
+
+
+
+</body>
+</html>

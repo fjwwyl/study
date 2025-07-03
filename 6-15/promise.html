@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+</body>
+<script>
+  const promise1 = [new Promise(((resolve, reject) => {
+    resolve(1);
+  })), new Promise(((resolve, reject) => {
+    reject(2)
+  })), new Promise(((resolve, reject) => {
+    resolve(3);
+  }))]
+
+  /**
+   * 会等待数组中所有得promise执行完之后才可以状态就会变成执行完，可以获取到所有得promsie的结果
+   */
+  Promise.allSettled(promise1).then(res => {
+    console.log(res);
+  })
+
+  /**
+   * 获取promise队列中最先执行的结果
+   */
+  Promise.race(promise1).then(res => {
+    console.log(res);
+  })
+
+  const promise2 = [new Promise(((resolve, reject) => {
+    setTimeout(() => {
+      resolve(1)
+    }, 3000)
+  })), new Promise(((resolve, reject) => {
+    setTimeout(() => {
+      resolve(2)
+    }, 2000)
+  })), new Promise(((resolve, reject) => {
+    setTimeout(() => {
+      resolve(3)
+    }, 3000)
+  }))]
+  /**
+   * any会等待第一个resolve的promise如果全是reject的话就会抛出错误
+   */
+  Promise.any(promise2).then(res => {
+    console.log(res);
+  })
+
+
+  const STATUS_PENDING = "pending";
+  const STATUS_FULFILLED = "fulfilled";
+  const STATUS_REJECTED = "rejected";
+
+  class myPromise {
+    constructor(promiseFunc) {
+      this.PromiseState = STATUS_PENDING;
+      this.PromiseResult = undefined;
+      this.onRejectedCallbacks = [];
+      this.onResolvedCallbacks = [];
+      try {
+        promiseFunc(this.resolve.bind(this), this.reject.bind(this));//注意this的bind问题
+      } catch (error) {
+        this.reject(error)
+      }
+
+    }
+
+    resolve(result) {
+      if (this.PromiseState === 'pending') {
+        setTimeout(() => {//调用回调数组的回调函数
+          this.PromiseState = 'fulfilled';
+          this.PromiseResult = result;
+          this.onResolvedCallbacks.forEach(callback => {
+            callback(result)
+          });
+        })
+      }
+    }
+
+    reject(reason) {
+      if (this.PromiseState === 'pending') {
+        setTimeout(() => {
+          this.PromiseState = 'rejected';
+          this.PromiseResult = reason;
+          this.onRejectedCallbacks.forEach(callback => {
+            callback(reason)
+          });
+        })
+      }
+    }
+
+
+    //then返回的是一个promise
+    then(onFulfilled, onRejected) {
+      onFulfilled = typeof onFulfilled === "function" ? onFulfilled : value => value;
+      onRejected = typeof onRejected === "function" ? onRejected : reason => {
+        throw reason
+      }
+
+
+      if (this.PromiseState === STATUS_PENDING) {
+        this.onRejectedCallbacks.push(onRejected);
+        this.onResolvedCallbacks.push(onFulfilled);
+      } else if (this.PromiseState === STATUS_FULFILLED) {
+        onFulfilled(this.PromiseResult);
+      } else {
+        onFulfilled(this.PromiseResult);
+      }
+
+      //链式调用返回的是一个怕promise
+
+      //链式调用先跳过  todo
+    }
+  }
+
+  const promise3 = new myPromise(((resolve, reject) => {
+    resolve(1);
+  }))
+  console.log(promise3);
+  promise3.then(res => {
+    console.log(res, "fjw");
+  })
+</script>
+</html>

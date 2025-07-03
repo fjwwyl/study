@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://unpkg.com/typescript@latest/lib/typescriptServices.js"></script>
+</head>
+<body>
+
+
+如何不适用new关键词实现一个newObj函数实现new
+
+
+<script>
+  class Person {
+    constructor(name) {
+      this.name = name;
+    }
+  }
+
+  function newObj() {
+    // 创建一个空对象
+    let obj = {};
+    // 对象的原型指向构造函数的prototype
+
+    obj.__proto__ = Person.constructor.prototype;
+    //调用构造函数，并且把this绑定到obj上
+    const result = Person.constructor.apply(obj, arguments);
+
+    console.log(result);
+    return result ? result : obj;
+  }
+
+  const p1 = new Person("fjw");
+  const p2 = newObj("fjw");
+  console.log(p1, p2);
+</script>
+
+设计原则
+单一职责：功能需要单一
+
+开放封闭：对拓展开放，对修改封闭
+
+
+
+</body>
+<script>
+
+</script>
+</html>

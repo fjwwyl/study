@@ -1,0 +1,9 @@
+{
+  "name": "vue3-ssr",
+  "version": "1.0.0",
+  "type": "module",
+  "dependencies": {
+    "express": "^5.1.0",
+    "vue": "^3.5.17"
+  }
+}

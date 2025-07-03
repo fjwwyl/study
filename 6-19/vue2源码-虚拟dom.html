@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+
+虚拟dom就是一个js对象来描述dom
+<div class="a" id="b">fjw</div>
+<script>
+  const test = {
+    tag: "div",
+    attr: {
+      class: "a",
+      id: "b"
+    },
+    text: "fjw",
+    children: {
+      ...
+    }
+  }
+</script>
+<script lang="ts">
+  class VNode {
+    tag?: string
+    data: VNodeData | undefined
+    children?: Array<VNode> | null
+    text?: string
+    elm: Node | undefined
+    ns?: string
+    context?: Component // rendered in this component's scope
+    key: string | number | undefined
+    componentOptions?: VNodeComponentOptions
+    componentInstance?: Component // component instance
+    parent: VNode | undefined | null // component placeholder node
+
+    // strictly internal
+    raw: boolean // contains raw HTML? (server only)
+    isStatic: boolean // hoisted static node
+    isRootInsert: boolean // necessary for enter transition check
+    isComment: boolean // empty comment placeholder?
+    isCloned: boolean // is a cloned node?
+    isOnce: boolean // is a v-once node?
+    asyncFactory?: Function // async component factory function
+    asyncMeta: Object | void
+    isAsyncPlaceholder: boolean
+    ssrContext?: Object | void
+    fnContext: Component | void // real context vm for functional nodes
+    fnOptions?: ComponentOptions | null // for SSR caching
+    devtoolsMeta?: Object | null // used to store functional render context for devtools
+    fnScopeId?: string | null // functional scope id support
+    isComponentRootElement?: boolean | null // for SSR directives
+
+    constructor(
+      tag?: string,
+    data?: VNodeData,
+    children?: Array<VNode> | null,
+    text?: string,
+    elm?: Node,
+    context?: Component,
+    componentOptions?: VNodeComponentOptions,
+    asyncFactory?: Function
+  ) {
+    this.tag = tag
+    this.data = data
+    this.children = children
+    this.text = text
+    this.elm = elm
+    this.ns = undefined
+    this.context = context
+    this.fnContext = undefined
+    this.fnOptions = undefined
+    this.fnScopeId = undefined
+    this.key = data && data.key
+    this.componentOptions = componentOptions
+    this.componentInstance = undefined
+    this.parent = undefined
+    this.raw = false
+    this.isStatic = false
+    this.isRootInsert = true
+    this.isComment = false
+    this.isCloned = false
+    this.isOnce = false
+    this.asyncFactory = asyncFactory
+    this.asyncMeta = undefined
+    this.isAsyncPlaceholder = false
+  }
+
+  // DEPRECATED: alias for componentInstance for backwards compat.
+  /* istanbul ignore next */
+  get child(): Component | void {
+    return this.componentInstance
+  }
+  }
+
+  //注释节点
+  export const createEmptyVNode = (text: string = '') => {
+    const node = new VNode()
+    node.text = text
+    node.isComment = true
+    return node
+  }
+
+  //文本节点
+  export function createTextVNode(val: string | number) {
+    return new VNode(undefined, undefined, undefined, String(val))
+  }
+
+  // optimized shallow clone
+  // used for static nodes and slot nodes because they may be reused across
+  // multiple renders, cloning them avoids errors when DOM manipulations rely
+  // on their elm reference.
+
+  // 克隆节点
+  export function cloneVNode(vnode: VNode): VNode {
+    const cloned = new VNode(
+      vnode.tag,
+      vnode.data,
+      // #7975
+      // clone children array to avoid mutating original in case of cloning
+      // a child.
+      vnode.children && vnode.children.slice(),
+      vnode.text,
+      vnode.elm,
+      vnode.context,
+      vnode.componentOptions,
+      vnode.asyncFactory
+    )
+    cloned.ns = vnode.ns
+    cloned.isStatic = vnode.isStatic
+    cloned.key = vnode.key
+    cloned.isComment = vnode.isComment
+    cloned.fnContext = vnode.fnContext
+    cloned.fnOptions = vnode.fnOptions
+    cloned.fnScopeId = vnode.fnScopeId
+    cloned.asyncMeta = vnode.asyncMeta
+    cloned.isCloned = true
+    return cloned
+  }
+</script>
+v-node的作用
+写好的template编译成vnode节点，发生变化之后生成的vnode和缓存的对比，如果有差异就是需要更新的dom节点，然后
+根据有差异的vnode创建出真实的dom插入到视图中
+
+dom-diff的的过程叫patch叫做打补丁，在vue中这么定义
+
+patch对旧的进行打补丁，得到新的v-node
+
+对比新旧的v-node，对v-node进行新建节点、删除节点、更新节点
+
+新建：新的有，旧的没有，在旧的添加
+删除：新的没有，旧的有，在旧的删除
+更新：新旧都有，以新为标准更新旧的
+
+更新节点的逻辑：
+
+
+1.都是静态节点直接跳过，因为静态节点没有可以修改的
+2.文本节点，对比新旧节点
+    新是文本节点，旧是文本节点直接对比
+    新是文本节点，旧不是文本节点，调用setTextNode方法改成文本节点然后在对比
+3.元素节点
+    节点包含子节点
+        看旧的节点是否包含字节点，如果包含，递归对比更新子节点
+        如果旧的不包含子节点，两种
+            1. 空节点  新的节点往旧的节点中插入一份
+            2. 文本节点   直接清空文本节点，创建新的子节点，插入到旧的节点中
+    不包含子节点 即空节点
+        直接清空旧的节点
+<script>
+  function patchVnode(
+    oldVnode,
+    vnode,
+    insertedVnodeQueue,
+    ownerArray,
+    index,
+    removeOnly?: any
+  ) {
+    //相同直接返回
+    if (oldVnode === vnode) {
+      return
+    }
+
+    if (isDef(vnode.elm) && isDef(ownerArray)) {
+      // clone reused vnode
+      vnode = ownerArray[index] = cloneVNode(vnode)
+    }
+
+    const elm = (vnode.elm = oldVnode.elm)
+
+    if (isTrue(oldVnode.isAsyncPlaceholder)) {
+      if (isDef(vnode.asyncFactory.resolved)) {
+        hydrate(oldVnode.elm, vnode, insertedVnodeQueue)
+      } else {
+        vnode.isAsyncPlaceholder = true
+      }
+      return
+    }
+
+    // reuse element for static trees.
+    // note we only do this if the vnode is cloned -
+    // if the new node is not cloned it means the render functions have been
+    // reset by the hot-reload-api and we need to do a proper re-render.
+
+
+
+    //静态节点 直接return
+    if (
+      isTrue(vnode.isStatic) &&
+      isTrue(oldVnode.isStatic) &&
+      vnode.key === oldVnode.key &&
+      (isTrue(vnode.isCloned) || isTrue(vnode.isOnce))
+    ) {
+      vnode.componentInstance = oldVnode.componentInstance
+      return
+    }
+
+    let i
+    const data = vnode.data
+    if (isDef(data) && isDef((i = data.hook)) && isDef((i = i.prepatch))) {
+      i(oldVnode, vnode)
+    }
+
+    const oldCh = oldVnode.children
+    const ch = vnode.children
+    if (isDef(data) && isPatchable(vnode)) {
+      for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode)
+      if (isDef((i = data.hook)) && isDef((i = i.update))) i(oldVnode, vnode)
+    }
+
+    //是否为文本节点
+
+    if (isUndef(vnode.text)) {
+      if (isDef(oldCh) && isDef(ch)) {
+        if (oldCh !== ch)
+          updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)
+      } else if (isDef(ch)) {
+        if (__DEV__) {
+          checkDuplicateKeys(ch)
+        }
+
+        //判断oldvalue是否有文本
+
+        //没有文本直接将子节点添加到真实的dom中
+        // 如果有则清空文本，再将
+        if (isDef(oldVnode.text)) nodeOps.setTextContent(elm, '')
+        addVnodes(elm, null, ch, 0, ch.length - 1, insertedVnodeQueue)
+      } else if (isDef(oldCh)) {
+        removeVnodes(oldCh, 0, oldCh.length - 1)
+      } else if (isDef(oldVnode.text)) {
+        nodeOps.setTextContent(elm, '')
+      }
+    } else if (oldVnode.text !== vnode.text) {
+      nodeOps.setTextContent(elm, vnode.text)
+    }
+    if (isDef(data)) {
+      if (isDef((i = data.hook)) && isDef((i = i.postpatch))) i(oldVnode, vnode)
+    }
+  }
+</script>
+
+创建子节点：新的节点的某个子节点在旧的节点中找不到和它相同的子节点，就需要新增，创建新的子节点
+创建子节点之后是需要插入新的子节点，因此插入的位置就需要确定：因该是插入到所有的未处理的节点之前，而不是已处理的节点之后
+
+
+删除子节点：每一个子节点循环完毕，发现旧的节点中还有未处理的子节点，直接删除
+
+
+移动子节点：新的节点中和旧的节点中存在相同的节点但是位置不同，就需要依靠新的节点的位置来移动旧的子节点
+
+
+<script>
+
+  function updateChildren(
+    parentElm,
+    oldCh,
+    newCh,
+    insertedVnodeQueue,
+    removeOnly
+  ) {
+    let oldStartIdx = 0
+    let newStartIdx = 0
+    let oldEndIdx = oldCh.length - 1
+    let oldStartVnode = oldCh[0]
+    let oldEndVnode = oldCh[oldEndIdx]
+    let newEndIdx = newCh.length - 1
+    let newStartVnode = newCh[0]
+    let newEndVnode = newCh[newEndIdx]
+    let oldKeyToIdx, idxInOld, vnodeToMove, refElm
+
+    // removeOnly is a special flag used only by <transition-group>
+    // to ensure removed elements stay in correct relative positions
+    // during leaving transitions
+    const canMove = !removeOnly
+
+    if (__DEV__) {
+      checkDuplicateKeys(newCh)
+    }
+
+    while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
+      if (isUndef(oldStartVnode)) {
+        oldStartVnode = oldCh[++oldStartIdx] // Vnode has been moved left
+      } else if (isUndef(oldEndVnode)) {
+        oldEndVnode = oldCh[--oldEndIdx]
+      } else if (sameVnode(oldStartVnode, newStartVnode)) {
+        patchVnode(
+          oldStartVnode,
+          newStartVnode,
+          insertedVnodeQueue,
+          newCh,
+          newStartIdx
+        )
+        oldStartVnode = oldCh[++oldStartIdx]
+        newStartVnode = newCh[++newStartIdx]
+      } else if (sameVnode(oldEndVnode, newEndVnode)) {
+        patchVnode(
+          oldEndVnode,
+          newEndVnode,
+          insertedVnodeQueue,
+          newCh,
+          newEndIdx
+        )
+        oldEndVnode = oldCh[--oldEndIdx]
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldStartVnode, newEndVnode)) {
+        // Vnode moved right
+        patchVnode(
+          oldStartVnode,
+          newEndVnode,
+          insertedVnodeQueue,
+          newCh,
+          newEndIdx
+        )
+        canMove &&
+        nodeOps.insertBefore(
+          parentElm,
+          oldStartVnode.elm,
+          nodeOps.nextSibling(oldEndVnode.elm)
+        )
+        oldStartVnode = oldCh[++oldStartIdx]
+        newEndVnode = newCh[--newEndIdx]
+      } else if (sameVnode(oldEndVnode, newStartVnode)) {
+        // Vnode moved left
+        patchVnode(
+          oldEndVnode,
+          newStartVnode,
+          insertedVnodeQueue,
+          newCh,
+          newStartIdx
+        )
+        canMove &&
+        nodeOps.insertBefore(parentElm, oldEndVnode.elm, oldStartVnode.elm)
+        oldEndVnode = oldCh[--oldEndIdx]
+        newStartVnode = newCh[++newStartIdx]
+      } else {
+        if (isUndef(oldKeyToIdx))
+          oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx)
+        idxInOld = isDef(newStartVnode.key)
+          ? oldKeyToIdx[newStartVnode.key]
+          : findIdxInOld(newStartVnode, oldCh, oldStartIdx, oldEndIdx)
+        if (isUndef(idxInOld)) {
+          // New element
+          createElm(
+            newStartVnode,
+            insertedVnodeQueue,
+            parentElm,
+            oldStartVnode.elm,
+            false,
+            newCh,
+            newStartIdx
+          )
+        } else {
+          vnodeToMove = oldCh[idxInOld]
+          if (sameVnode(vnodeToMove, newStartVnode)) {
+            patchVnode(
+              vnodeToMove,
+              newStartVnode,
+              insertedVnodeQueue,
+              newCh,
+              newStartIdx
+            )
+            oldCh[idxInOld] = undefined
+            canMove &&
+            nodeOps.insertBefore(
+              parentElm,
+              vnodeToMove.elm,
+              oldStartVnode.elm
+            )
+          } else {
+            // same key but different element. treat as new element
+            createElm(
+              newStartVnode,
+              insertedVnodeQueue,
+              parentElm,
+              oldStartVnode.elm,
+              false,
+              newCh,
+              newStartIdx
+            )
+          }
+        }
+        newStartVnode = newCh[++newStartIdx]
+      }
+    }
+    if (oldStartIdx > oldEndIdx) {
+      refElm = isUndef(newCh[newEndIdx + 1]) ? null : newCh[newEndIdx + 1].elm
+      addVnodes(
+        parentElm,
+        refElm,
+        newCh,
+        newStartIdx,
+        newEndIdx,
+        insertedVnodeQueue
+      )
+    } else if (newStartIdx > newEndIdx) {
+      removeVnodes(oldCh, oldStartIdx, oldEndIdx)
+    }
+  }
+</script>
+
+性能问题：如果新旧对比
+new:[1,2,3,4];
+old:[1,2,3,5];
+如上：如果按照顺序对比则需要对比O2的时间复杂度，16才能确定新旧的index为4的子节点不同；
+因此就需要优化
+
+
+定义：
+新子节点的所有未处理的第一个子节点：新前
+新子节点的所有未处理的最后一个子节点：新后
+旧子节点的所有未处理的第一个子节点：旧前
+旧子节点的所有未处理的最后一个子节点：旧后
+
+1.新前和旧前
+2.新后和旧后
+3.新后和旧前
+4.新前和旧后
+  3.4是通过移动节点的方式来处理
+</body>
+</html>
