@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>vite</title>
+</head>
+<body>
+特性：
+
+
+1.无需打包   no   bundle的思想
+why？
+
+按需引入，要啥引用啥。
+
+启动->启动server->判断资源类型->css less scss使用css预处理->编译为es-module动态插入到style标签
+                          ->ts  tsx  jsx ->js编译
+
+hmr更新速度快-> 加载client.js   监听消息加载资源
+
+
+
+
+预构建  commonjs->esm模块   合并模板  记录到 metadata.json
+
+esbuild快
+
+
+生产环境是使用rollup打包    对文件的处理是插件化，因此只要插件一直，生产环境还是开发环境使用不同构建方式产生的结果是一样的。
+
+插件：https://cn.vitejs.dev/guide/api-plugin.html
+config可以修改config的配置
+
+configResolved 获取解析config后的内容
+
+configReServer
+总结：
+
+有点：冷启动
+bundle
+es-build
+预构建
+存在缓存策略
+按需加载 基于浏览器的支持
+缺点：
+
+生态不如webpack
+
+针对生产环境：是基于rollup打包的。
+
+
+
+
+</body>
+</html>

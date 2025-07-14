@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>nodejs</title>
+</head>
+<body>
+浏览器内核
+
+将网页的代码转化成用户的可视化页面
+
+
+js引擎
+
+
+v8属于js引擎
+
+v8的工作原理
+
+加载js->parse->ast->lgnition解释器->字节码
+|
+turbofun编译器->machinecode优化之后的机器码 ->cpu
+
+
+chrome 浏览器
+
+浏览器架构
+
+render线程->渲染线程 v8引擎->解释代码
+中间层
+操作系统网卡显卡磁盘
+
+
+node结构
+
+
+js
+
+通过v8 第三方C++模板等
+
+
+os cpu ram io
+
+nodejs能干什么？
+
+
+1.服务端开发
+2. 爬虫
+
+3. 开发工具
+4.客户端 electron
+5. ssr
+6. serverless
+7.流式ssr
+8.npm yarn pnpm
+
+
+common.js规范  三个核心  exports  module  require
+
+
+node有模板构成
+
+每一个为文件都是一个模板都有自己的作用域
+
+
+exports或者module.exports导出内容
+module为模块系统的核心
+每一个文件都是module实例
+
+exports是module.exports对应的引用
+
+export = module.exports ={}
+
+
+require 加载的对应的模块  读取文件，找到文件module.exports的内容
+
+
+require的原理
+
+common.js   模块输出的值的拷贝
+
+
+
+
+</body>
+</html>

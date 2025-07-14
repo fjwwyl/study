@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+</head>
+<body>
+
+模块化的诉求
+
+功能上：将散落的模块打包到一起 也是最基础的能力
+
+拓展：进行模块化的资源整合
+
+
+webpack工作原理
+1. 初始化
+
+Dependency Graph 表示的是模块之前的依赖关系
+通过它就可以将分成多个概念
+
+module  模块
+dependency  依赖   也就是模块正常运行所需要的资源
+chunk  一个chunk就是一个最小单元
+
+
+moduleGraph的概念
+
+它会提供方法tools
+
+
+moduleGraph包括了dependencyMap一个moduleMap
+
+
+2. 构建阶段
+3. 生成阶段
+
+4. 写入阶段
+
+
+loaders  加载，  异步和同步
+
+
+
+webpack异步加载分包
+
+1.import按需加载
+2.webpack.ensure
+
+__webpack_require__
+
+首先查看模块是否加载过，如果没有则构造一个module
+__webpack_require__.d用来处理esm模块的
+
+__webpack_require__.e创建script标签的方法
+
+__webpack_require__.f.j  promise
+__webpack_require__.l  真实创建script
+
+
+
+
+
+
+
+
+
+
+面试题：
+
+从 0-1 使用 webpack 进行搭建vue react?
+对 webpack的执行过程的理解?
+plugins常用的插件有哪些?自定义的插件？事件机制tapable?
+loader 常用的loader 有哪些
+开发自定义loader 原理babel-loader =》ast
+异步组件import原理?
+优化:
+速度
+体积
+
+
+优化打包流程
+
+1.review  构建过程  那些阶段比较耗时？
+
+体积小
+    按需加载  异步组件的加载 非首屏的组件进行异步组件
+    配合缓存 缓存策略   比如将vue的版本，pinia打包
+    较少 commonjs的使用
+why？？？
+        多使用es_module库
+
+时间快
+
+空间换取时间的思想
+1. 多线程打包
+
+
+thread-loader
+
+
+
+
+构建优化
+
+
+代码分割：
+
+1.entry分割成不同的chunk，多个入口
+
+2.import  动态导入 模块
+
+异步的组件返回的一个 promise
+针对次屏的资源
+vue-router
+
+
+import
+
+1.webpack会提供很多方法
+
+asyncModule 返回 promise
+
+2. 创建script  url  加载资源
+
+3.   self.push 到资源内容
+4. push劫持  对应的资源内容注入到__webpack_require__.m中来存储所有的module
+5.可以获取所以有的异步资源
+
+
+3.splitchunks  防止模块重复  分离chunk
+
+webpack官网查看可以查看
+
+1.19.30
+<script>
+    module.exports = {
+        //...
+        optimization: {
+            splitChunks: {
+                chunks: 'async',
+                minSize: 20000,
+                minRemainingSize: 0,
+                minChunks: 1,
+                maxAsyncRequests: 30,
+                maxInitialRequests: 30,
+                enforceSizeThreshold: 50000,
+                cacheGroups: {
+                    defaultVendors: {
+                        test: /[\\/]node_modules[\\/]/,
+                        priority: -10,
+                        reuseExistingChunk: true,
+                    },
+                    default: {
+                        minChunks: 2,
+                        priority: -20,
+                        reuseExistingChunk: true,
+                    },
+                },
+            },
+        },
+    };
+</script>
+
+缓存策略也是webpack优化相关
+webpack自带的配置为cache
+
+多线程
+
+thread-loader
+
+
+
+
+
+
+
+
+
+
+
+
+流程：
+
+
+
+初始化参数  参数合并得到最终的参数
+
+开始编译   compiler
+确认入口  entry
+
+
+编译模块  loader对模块进行翻译  递归对所以来的模块进行翻译 形成模块树
+
+完成模块编译
+
+输出资源   得到的chunk  然后转换文件输出到文件系统
+
+bundle
+
+
+compiler  所有配置信息
+
+包括options   plugins  loaders
+
+生命周期  启动到关闭
+
+compilation当前模块的相关资源  编译生成的资源变化的文件
+
+只代表一次新的编译
+
+
+事件流
+
+基于tapable的事件流，发布订阅的模式实现插件机制
+
+提供一系列的api
+注册事件在不同的时机出发执行
+
+
+sync 和async 同步事件和异步事件
+
+
+插件本质是一个类
+
+apply的方法
+
+
+
+
+
+
+</body>
+</html>
