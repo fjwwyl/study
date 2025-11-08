@@ -1,0 +1,98 @@
+[
+  {
+    "problem": "盒子模型",
+    "answer": "标准盒子模型和ie盒子模型，标准盒子模型width只是文本的宽度，标准盒子模型的宽度等于出了border+padding+content"
+  },
+  {
+    "problem": "样式优先级计算",
+    "answer": "!important> 内联>id>class>标签>通配，内联样式表是style标签里边的内容"
+  },
+  {
+    "problem": "css选择符？那些可以继承？",
+    "answer": "统配，id选择器#，类选择器. ，标签选择器div span，相邻选择器+，后代选择器ui ul，子元素选择器>，属性选择器a[href]"
+  },
+  {
+    "problem": "可以继承的",
+    "answer": "font,color,text的居中方式，首行缩进等等"
+  },
+  {
+    "problem": "三角形",
+    "answer": "利用边框实现一个三角形，一个边框有颜色，其余都是透明色就可以实现"
+  },
+  {
+    "problem": "单行文本省略和多行文本省略",
+    "answer": "定宽，文本不换行white-space:nowrap，超出隐藏overflow:hidden，添加省略号text-overflow:ellipsis"
+  },
+  {
+    "problem": "position的值",
+    "answer": "fixed相对于窗口固定，relative相对于自身不脱于文档流，absolute相对于上一个relative，脱离文档流"
+  },
+  {
+    "problem": "bfc规范",
+    "answer": "块级格式化上下文，页面的一个隔离容器，容器里边的永远不会影响外边的元素，触发方式：float非none，overflow非visible，position：absolute和fixed"
+  },
+  {
+    "problem": "垂直外边距叠加",
+    "answer": "垂直外边距接触就会直接合并，取视觉高度差距最大的，比如父子元素边框重叠，设置了margin-top父子都会移动，使用bfc就可以解决"
+  },
+  {
+    "problem": "伪元素和伪类",
+    "answer": "::before和:hover,伪类是通过在元素选择器上加⼊伪类改变元素状态，⽽伪元素通过对元素的操作进⾏对元素的改变。"
+  },
+  {
+    "problem": "行类元素和块元素",
+    "answer": [
+      "行内元素不能设置高度和宽度，不会独占一行，默认下边内外边距只在水平方向有效，具体有：span，a，button，input，img等",
+      "独占一行，设置可以高度宽度和边距，宽度默认为父元素的100%，具体有：div，p,h1,ul,li,ol,table,form"
+    ]
+  },
+  {
+    "problem": "display的属性值及其作用",
+    "answer": [
+      "none元素不显示，并且在文档中一处",
+      "block块元素",
+      "inline行内元素",
+      "inline-block行内块元素，默认宽度内内容宽度，可以设置高度",
+      "inherit：继承父元素的属性"
+    ]
+  },
+  {
+    "problem": "隐藏元素",
+    "answer": [
+      "display:none",
+      "z-index负值被别的覆盖",
+      "opacity0透明",
+      "position:absolute绝对定位移除出当前画面",
+      "visibility:hidden设置元素隐藏"
+    ]
+  },
+  {
+    "problem": "display:none与visibility:hidden的区别",
+    "answer": "一个在dom渲染树中消失，一个不会"
+  },
+  {
+    "problem": "CSS3中的transform有哪些属性",
+    "answer": "属性用于对元素进行 2D 或 3D 变换，translate移动，scale缩放，可以用于实现0.5px的线，其他没用过"
+  },
+  {
+    "problem": "常见的CSS布局单位",
+    "answer": [
+      "像素（px）是页面布局的基础，一个像素表示终端（电脑、手机、平板等）屏幕所能显示的最小的区域，像素分为两种类型：CSS像素和物理像素",
+      "百分比（%），当浏览器的宽度或者高度发生变化时，通过百分比单位可以使得浏览器中的组件的宽和高随着浏览器的变化而变化，从而实现响应式的效果。一般认为子元素的百分比相对于直接父元素。",
+      "em和rem相对于px更具灵活性，它们都是相对长度单位，它们之间的区别：em相对于父元素，rem相对于根元素。",
+      "vw/vh是与视图窗口有关的单位，vw表示相对于视图窗口的宽度，vh表示相对于视图窗口高度"
+    ]
+  },
+  {
+    "problem": "flex",
+    "answer": "flex-direction属性决定主轴的方向（即项目的排列方向）。\nflex-wrap属性定义，如果一条轴线排不下，如何换行。\nflex-flow属性是flex-direction属性和flex-wrap属性的简写形式，默认值为row nowrap。\njustify-content属性定义了项目在主轴上的对齐方式。\nalign-items属性定义项目在交叉轴上如何对齐。\nalign-content属性定义了多根轴线的对齐方式。如果项目只有一根轴线，该属性不起作用。"
+  },
+  {
+    "problem": "flex布局",
+    "answer": ""
+  },
+  {
+    "problem": "页面垂直布局",
+    "answer": "1.flex布局，定位，绝对定位"
+  }
+]

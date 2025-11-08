@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+</body>
+
+<script>
+    function quickSort(arr) {
+        if (arr.length <= 1) {
+            return arr;
+        }
+        const middle = arr[Math.floor(arr.length / 2)];
+
+        const left = [];
+        const right = [];
+        const equal = [];
+
+        for (let a of arr) {
+            if (a < middle) {
+                left.push(a);
+            } else if (a > middle) {
+                right.push(a);
+            } else {
+                equal.push(a);
+            }
+        }
+
+        return [...quickSort(left), ...equal, ...quickSort(right)];
+    }
+
+    // 使用示例
+    const array = [8, 6, 9, 7, 4, 5, 1, 2, 3];
+    console.log(quickSort(array));
+</script>
+</html>

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "728",
+    "title": "面试官：在Node.js中创建线程的都有哪几种方法？",
+    "content": "在Node.js中创建线程的方法\n在Node.js中，有几种主要的方法可以创建线程或实现类似线程的并行执行：\n\n1. Worker Threads模块\nNode.js内置的worker_threads模块允许创建真正的线程：\n\njavascript\nconst { Worker, isMainThread } = require('worker_threads');\n\nif (isMainThread) {\n  // 主线程\n  const worker = new Worker(__filename, {\n    workerData: { someData: '传递给worker的数据' }\n  });\n} else {\n  // worker线程\n  const { workerData } = require('worker_threads');\n  console.log(workerData.someData);\n}\n2. 子进程 (Child Processes)\n使用child_process模块创建独立的进程：\n\njavascript\nconst { fork } = require('child_process');\n\nconst child = fork('worker.js');\nchild.on('message', (msg) => {\n  console.log('来自子进程的消息:', msg);\n});\nchild.send({ hello: 'world' });\n3. 集群模块 (Cluster)\ncluster模块允许创建共享服务器端口的子进程：\n\njavascript\nconst cluster = require('cluster');\nconst http = require('http');\nconst numCPUs = require('os').cpus().length;\n\nif (cluster.isMaster) {\n  // 主进程\n  for (let i = 0; i < numCPUs; i++) {\n    cluster.fork();\n  }\n} else {\n  // 工作进程\n  http.createServer((req, res) => {\n    res.writeHead(200);\n    res.end('hello world\\n');\n  }).listen(8000);\n}\n4. 第三方库\n如piscina等库提供了更高级的线程池管理：\n\njavascript\nconst Piscina = require('piscina');\n\nconst pool = new Piscina({\n  filename: path.resolve(__dirname, 'worker.js')\n});\n\n(async function() {\n  const result = await pool.run({ a: 4, b: 6 });\n  console.log(result); // 打印10\n})();\n选择建议\n对于CPU密集型任务：使用Worker Threads\n\n对于需要独立进程的任务：使用Child Processes\n\n对于需要负载均衡的HTTP服务：使用Cluster\n\n对于需要精细管理的线程池：考虑第三方库\n\n每种方法都有其适用场景，选择取决于具体需求如资源共享需求、通信频率和任务类型等。"
+  },
+  {
+    "id": 1754142600992,
+    "title": "web开发中 自动登录是什么意思？",
+    "content": "自动登录（Auto-login 或 Remember Me）是Web开发中的一种常见功能，它允许用户在关闭浏览器或会话过期后再次访问网站时无需重新输入用户名和密码即可自动完成登录。\n\n工作原理\n基于Cookie的机制：当用户勾选\"记住我\"或\"自动登录\"选项时，系统会在用户浏览器中存储一个特殊的认证令牌（通常是加密的）\n\n持久会话：与普通会话Cookie不同，自动登录的Cookie通常有更长的有效期（如几周或几个月）\n\n令牌验证：用户再次访问时，系统通过验证Cookie中的令牌自动完成身份验证\n\n实现方式\n常见的实现方法包括：\n\n生成并存储长期有效的令牌（Token）\n\n使用加密的Cookie存储用户凭证\n\n结合数据库存储登录状态\n\n安全性考虑\n自动登录虽然方便，但也带来安全风险：\n\n需要妥善加密存储的凭证\n\n应该提供明显的退出自动登录选项\n\n建议对敏感操作（如支付）要求重新验证\n\n通常不建议在公共电脑上使用此功能\n\n适用场景\n自动登录特别适合：\n\n个人设备上的常用网站\n\n对安全性要求不高的应用\n\n需要频繁访问的服务\n\n在实现自动登录功能时，开发者需要在用户体验和安全性之间找到平衡。"
+  },
+  {
+    "id": 1754660646331,
+    "title": "前端经典场景：如何在页面卸载时向后端发送数据",
+    "content": "2. navigator.sendBeacon() (推荐)\njavascript\nwindow.addEventListener('unload', function() {\n  const data = JSON.stringify({key: 'value'});\n  navigator.sendBeacon('/api/log', data);\n});\n优点：\n\n专门为这种场景设计\n\n异步发送，不延迟页面卸载\n\n即使页面关闭也会尝试发送\n\n支持跨域请求"
+  },
+  {
+    "id": 1754660706626,
+    "title": "节流和防抖有何不同？各自适用于什么场景？",
+    "content": "节流（Throttle）与防抖（Debounce）的区别与应用场景\n节流和防抖都是用于控制函数执行频率的技术，但它们的机制和适用场景有所不同。\n\n核心区别\n特性\t节流 (Throttle)\t防抖 (Debounce)\n定义\t固定时间间隔内只执行一次\t事件停止触发后延迟一段时间才执行\n执行时机\t按固定频率执行\t只在最后一次触发后执行\n类比\t像机枪的连发，有节奏地发射\t像电梯门，等人进完了才关门\n代码实现对比\n节流实现\njavascript\nfunction throttle(func, delay) {\n  let lastCall = 0;\n  return function(...args) {\n    const now = new Date().getTime();\n    if (now - lastCall < delay) return;\n    lastCall = now;\n    return func.apply(this, args);\n  };\n}\n防抖实现\njavascript\nfunction debounce(func, delay) {\n  let timeoutId;\n  return function(...args) {\n    clearTimeout(timeoutId);\n    timeoutId = setTimeout(() => {\n      func.apply(this, args);\n    }, delay);\n  };\n}\n适用场景\n节流的典型场景\n滚动事件处理：监听滚动位置实现无限滚动\n\njavascript\nwindow.addEventListener('scroll', throttle(handleScroll, 200));\n鼠标移动事件：拖拽元素时的实时位置更新\n\n窗口resize：调整布局时避免过于频繁的计算\n\n游戏中的按键输入：控制角色移动频率\n\n防抖的典型场景\n搜索框输入：等待用户停止输入后再发起搜索请求\n\njavascript\nsearchInput.addEventListener('input', debounce(fetchResults, 500));\n表单验证：用户停止输入后再进行验证\n\n自动保存功能：文档编辑后等待停顿再保存\n\n防止重复提交：按钮点击后一段时间内禁用重复提交\n\n可视化理解\ntext\n事件触发:    • • • • • • • • • • • • • • • \n节流效果:    •     •     •     •     •    (固定间隔)\n防抖效果:                  •             (最后触发)\n进阶技巧\n立即执行的防抖：第一次触发立即执行，之后防抖\n\njavascript\nfunction debounceImmediate(func, delay) {\n  let timeoutId;\n  return function(...args) {\n    const callNow = !timeoutId;\n    clearTimeout(timeoutId);\n    timeoutId = setTimeout(() => {\n      timeoutId = null;\n    }, delay);\n    if (callNow) func.apply(this, args);\n  };\n}\n组合使用：某些场景可能需要两者结合\n\njavascript\nfunction throttleDebounce(func, throttleDelay, debounceDelay) {\n  // 实现略\n}\n选择建议\n需要即时反馈但限制频率 → 选择节流\n\n需要最终状态且避免中间过程 → 选择防抖\n\n不确定时可以通过实际测试来决定哪种效果更符合需求\n\n理解这两种技术的差异将帮助你在前端开发中更精准地控制事件处理，优化性能并提升用户体验。\n\n"
+  },
+  {
+    "title": "面试官：Token快过期了怎么办？三种续期方案，我选Refresh Token",
+    "id": 1758008267784,
+    "content": "刷新令牌机制 (Refresh Token) - ⭐⭐⭐⭐⭐（强烈推荐）这是目前最主流、最安全、最推荐的方案，也是你面试时最应该拿出来详谈的方案。核心逻辑：双令牌解耦（Access Token=访问权，Refresh Token=续期权）它引入了“双令牌”的概念，把“访问权限”和“续期权限”解耦。工作方式首次登录用户登录成功，服务器返回两个Token： Access Token访问令牌，生命周期很短（如1小时），用于API请求时的身份验证。Refresh Token刷新令牌，生命周期很长（如7天），专门用来获取新的Access Token。日常访问客户端每次请求API，都只带上Access Token。Access Token过期当Access Token过期，服务器返回401 Unauthorized。静默刷新客户端的请求拦截器捕获到401后，自动携带Refresh Token去请求一个专门的刷新接口（如/refresh）。获取新生服务器验证Refresh Token有效后，签发一个全新的Access Token，返回给客户端。无感重试客户端拿到新的Access Token后，重新执行刚才失败的API请求。整个过程对用户完全透明。优点极致安全Access Token寿命极短，即使泄露，攻击者也只能猖獗一小会儿。而用于续命的Refresh Token只在刷新时才露面，且服务端可以将其加入黑名单，强制某些用户下线。体验与控制兼备完美解决了用户体验与服务端控制权的平衡问题。"
+  },
+  {
+    "title": "浏览器的渲染流程详细讲一下",
+    "id": 1758009511856,
+    "content": "1"
+  },
+  {
+    "title": "在开发组件的过程中如何让组件的耦合度降低",
+    "id": 1758009547392,
+    "content": "1"
+  }
+]
